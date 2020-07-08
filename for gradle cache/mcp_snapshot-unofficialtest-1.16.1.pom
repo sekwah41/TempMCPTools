@@ -4,5 +4,5 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.oceanlabs.mcp</groupId>
   <artifactId>mcp_snapshot</artifactId>
-  <version>20200706-unofficialtest-1.16.1</version>
+  <version>unofficialtest-1.16.1</version>
 </project>
