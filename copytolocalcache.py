@@ -28,13 +28,13 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 filenames = ['fields.csv', 'methods.csv', "params.csv"]
 
 zf = zipfile.ZipFile(join(dir_path, mcpzip), "w")
-print("Zip Location {location}".format(location=mcpzip))
-for folderName, subfolders, filenames in os.walk(join(dir_path, mappingsfolder)):
+print(f"Zip Location {mcpzip}")
+for folderName, subfolders, files in os.walk(join(dir_path, mappingsfolder)):
     for filename in filenames:
-        #create complete filepath of file in directory
+        # create complete filepath of file in directory
         filePath = join(folderName, filename)
         # Add file to zip
         zf.write(filePath, basename(filePath))
-        print("Written {name}".format(name=filename))
+        print(f"Written {filename}")
 zf.close()
 
