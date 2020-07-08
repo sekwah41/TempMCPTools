@@ -73,9 +73,9 @@ def sortAndMerge(file):
     line_number = 0
     for line in original_csv:
         # Don't need to filter first line as none are ever called searge ;)
-        if line[0] not in fields:
+        if line[0] not in fields and line[0] != line[1]:
             target.write(",".join(line) + "\n")
-        fields[line[0]] = line[1]
+            fields[line[0]] = line[1]
         line_number += 1
 
     for line in additional_csv:
