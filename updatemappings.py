@@ -3,6 +3,10 @@ import csv
 from os.path import expanduser, join, basename, exists
 import re
 
+import sys
+
+includeUnverified = len(sys.argv) > 1 and sys.argv[1].lower() == "unverified"
+
 legal_name = re.compile('([a-zA-Z_0-9])*')
 bad_start = re.compile('([0-9])')
 
@@ -35,7 +39,7 @@ def convertToMCP():
                 print(f'Column names are {", ".join(row)}')
             elif len(row) != 6:
                 print(f"Warning at entry, incorrect number of entries {row}")
-            elif row[0] == "TRUE" and row[2] != "" and row[3] != "" and row[4] != "":
+            elif (includeUnverified or row[0] == "TRUE") and row[2] != "" and row[3] != "" and row[4] != "":
                 if row[2].find(" ") != -1 or row[3].find(" ") != -1:
                     print(f"Warning at entry {row}")
                 elif bad_start.match(row[3]) or not legal_name.match(row[3]).span()[1] == len(row[3]):
@@ -99,3 +103,6 @@ convertToMCP()
 for file in fileNames:
     sortAndMerge(file)
 print("Finished Merging")
+
+if includeUnverified:
+    print("Included unverified mappings")
