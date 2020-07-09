@@ -59,8 +59,19 @@ def convertToMCP():
     print("Converted")
 
 
+def readLines(csv, fields, fileOut, ignoreWarnings):
+    for line in csv:
+        if line[0] == "searge":
+            pass
+        elif line[0] not in fields and line[0] != line[1]:
+            fileOut.write(",".join(line) + "\n")
+            fields[line[0]] = line[1]
+        elif line[0] != line[1] and line[1] != fields[line[0]] and not ignoreWarnings:
+            print(f"Duplicate found {line} original {fields[line[0]]}")
+
+
 # searge,name,side,desc
-def sortAndMerge(file):
+def sortAndMerge(file, oursBefore):
     original = open(f'original/{file}')
     additional = open(f'projectmappings/{file}')
     target = open(f'merged/{file}', 'w')
@@ -70,22 +81,14 @@ def sortAndMerge(file):
     original_csv = csv.reader(original, delimiter=',')
     additional_csv = csv.reader(additional, delimiter=',')
 
-    line_number = 0
-    for line in original_csv:
-        # Don't need to filter first line as none are ever called searge ;)
-        if line[0] not in fields and line[0] != line[1]:
-            target.write(",".join(line) + "\n")
-            fields[line[0]] = line[1]
-        line_number += 1
+    target.write("searge,name,side,desc\n")
 
-    for line in additional_csv:
-        # Don't need to filter first line as none are ever called searge ;)
-        if line[0] not in fields:
-            target.write(",".join(line) + "\n")
-        fields[line[0]] = line[1]
-        line_number += 1
-
-    print(f"Written lines {line_number} to {file}")
+    if oursBefore:
+        readLines(additional_csv, fields, target, True)
+        readLines(original_csv, fields, target, True)
+    else:
+        readLines(original_csv, fields, target, False)
+        readLines(additional_csv, fields, target, False)
 
     original.close()
     additional.close()
@@ -100,8 +103,10 @@ if (len([a for a in fileNames if exists(f"original/{a}")])) != 3:
 downloadMappings()
 convertToMCP()
 
-for file in fileNames:
-    sortAndMerge(file)
+sortAndMerge("fields.csv", False)
+sortAndMerge("methods.csv", False)
+sortAndMerge("params.csv", True)
+
 print("Finished Merging")
 
 if includeUnverified:
