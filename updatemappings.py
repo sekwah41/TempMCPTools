@@ -61,19 +61,19 @@ def convertToMCP():
     print("Converted")
 
 
-def readLines(csv, fields, fileOut, ignoreWarnings):
+def readLines(csv, fields, fileOut, ignoreWarnings, maxFields = 4):
     for line in csv:
-        if line[0] == "searge":
+        if line[0] == "searge" or line[0] == "param":
             pass
         elif line[0] not in fields and line[0] != line[1]:
-            fileOut.writerow(line)
+            fileOut.writerow(line[0:maxFields])
             fields[line[0]] = line[1]
         elif line[0] != line[1] and (line[1] != fields[line[0]] or alwaysWarn) and not ignoreWarnings:
             print(f"Duplicate found {line} original {fields[line[0]]}")
 
 
 # searge,name,side,desc
-def sortAndMerge(file, oursBefore):
+def sortAndMerge(file, firstLine="searge,name,side,desc" , oursBefore=False, maxFields=4):
     original = open(f'original/{file}')
     additional = open(f'projectmappings/{file}')
     target = open(f'merged/{file}', 'w', newline='')
@@ -83,13 +83,13 @@ def sortAndMerge(file, oursBefore):
     original_csv = csv.reader(original, delimiter=',')
     additional_csv = csv.reader(additional, delimiter=',')
 
-    target.write("searge,name,side,desc\n")
+    target.write(f"{firstLine}\n")
 
     csv_writer = csv.writer(target, delimiter=',')
 
 
     if oursBefore:
-        readLines(additional_csv, fields, csv_writer, True)
+        readLines(additional_csv, fields, csv_writer, True, maxFields = maxFields)
         readLines(original_csv, fields, csv_writer, True)
     else:
         readLines(original_csv, fields, csv_writer, False)
@@ -108,9 +108,9 @@ if (len([a for a in fileNames if exists(f"original/{a}")])) != 3:
 downloadMappings()
 convertToMCP()
 
-sortAndMerge("fields.csv", False)
-sortAndMerge("methods.csv", False)
-sortAndMerge("params.csv", True)
+sortAndMerge("fields.csv", oursBefore=True, maxFields=4)
+sortAndMerge("methods.csv", oursBefore=True, maxFields=4)
+sortAndMerge("params.csv", firstLine="param,name,side", oursBefore=True, maxFields=3)
 
 print("Finished Merging")
 
