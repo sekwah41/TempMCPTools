@@ -10,6 +10,8 @@ includeUnverified = len(sys.argv) > 1 and sys.argv[1].lower() == "unverified"
 legal_name = re.compile('([a-zA-Z_0-9])*')
 bad_start = re.compile('([0-9])')
 
+alwaysWarn = False
+
 def downloadMappings():
     print("Downloading mappings")
     response = requests.get(
@@ -64,9 +66,9 @@ def readLines(csv, fields, fileOut, ignoreWarnings):
         if line[0] == "searge":
             pass
         elif line[0] not in fields and line[0] != line[1]:
-            fileOut.write(",".join(line) + "\n")
+            fileOut.writerow(line)
             fields[line[0]] = line[1]
-        elif line[0] != line[1] and line[1] != fields[line[0]] and not ignoreWarnings:
+        elif line[0] != line[1] and (line[1] != fields[line[0]] or alwaysWarn) and not ignoreWarnings:
             print(f"Duplicate found {line} original {fields[line[0]]}")
 
 
@@ -74,7 +76,7 @@ def readLines(csv, fields, fileOut, ignoreWarnings):
 def sortAndMerge(file, oursBefore):
     original = open(f'original/{file}')
     additional = open(f'projectmappings/{file}')
-    target = open(f'merged/{file}', 'w')
+    target = open(f'merged/{file}', 'w', newline='')
 
     fields = {}
 
@@ -83,12 +85,15 @@ def sortAndMerge(file, oursBefore):
 
     target.write("searge,name,side,desc\n")
 
+    csv_writer = csv.writer(target, delimiter=',')
+
+
     if oursBefore:
-        readLines(additional_csv, fields, target, True)
-        readLines(original_csv, fields, target, True)
+        readLines(additional_csv, fields, csv_writer, True)
+        readLines(original_csv, fields, csv_writer, True)
     else:
-        readLines(original_csv, fields, target, False)
-        readLines(additional_csv, fields, target, False)
+        readLines(original_csv, fields, csv_writer, False)
+        readLines(additional_csv, fields, csv_writer, False)
 
     original.close()
     additional.close()
