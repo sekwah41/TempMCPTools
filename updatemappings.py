@@ -10,7 +10,7 @@ includeUnverified = len(sys.argv) > 1 and sys.argv[1].lower() == "unverified"
 legal_name = re.compile('([a-zA-Z_0-9])*')
 bad_start = re.compile('([0-9])')
 
-alwaysWarn = False
+alwaysWarn = True
 
 def downloadMappings():
     print("Downloading mappings")
@@ -31,9 +31,12 @@ def downloadMappings():
 
 def convertToMCP():
     with open('fulldump.csv') as csv_file:
-        fields = open('projectmappings/fields.csv', 'w')
-        methods = open('projectmappings/methods.csv', 'w')
-        params = open('projectmappings/params.csv', 'w')
+        fields = open('projectmappings/fields.csv', 'w', newline='')
+        methods = open('projectmappings/methods.csv', 'w', newline='')
+        params = open('projectmappings/params.csv', 'w', newline='')
+        fields_csv_writer = csv.writer(fields, delimiter=',')
+        methods_csv_writer = csv.writer(methods, delimiter=',')
+        params_csv_writer = csv.writer(params, delimiter=',')
         raw_mappings = csv.reader(csv_file, delimiter=',')
         line_number = 0
         for row in raw_mappings:
@@ -47,13 +50,12 @@ def convertToMCP():
                 elif bad_start.match(row[3]) or not legal_name.match(row[3]).span()[1] == len(row[3]):
                     print(f"Bad name detected {row}")
                 else:
-                    line = f"{row[2]},{row[3]},{row[4]},{row[5]}\n"
                     if row[2].startswith("field_"):
-                        fields.write(line)
+                        fields_csv_writer.writerow(row[2:6])
                     elif row[2].startswith("func_"):
-                        methods.write(line)
+                        methods_csv_writer.writerow(row[2:6])
                     elif row[2].startswith("p_"):
-                        params.write(line)
+                        params_csv_writer.writerow(row[2:6])
             line_number += 1
         fields.close()
         methods.close()
